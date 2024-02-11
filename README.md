@@ -67,7 +67,7 @@ Note that the file extension does not need to be `.json`. If you choose `.md`, y
 
 ## Installation
 
-Since this plugin is still awaiting approval from the Obsidian team, it's not available in the community plugin browser yet.
+Since this plugin is still in its beta, it's not available in the community plugin browser yet.
 
 But you can install the latest release using [BRAT](https://github.com/TfTHacker/obsidian42-brat).
 

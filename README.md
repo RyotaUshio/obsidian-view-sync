@@ -41,21 +41,23 @@ It will save the handwriting to the original PDF file, and it will immediately a
 
 ### Desktop settings
 
-Since the desktop is the main device in this example, you only have to fill in the first option.
+Since the desktop is the main device in this example, you only have to fill in the first two options.
 
-![Desktop settings](https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/18f9d4d2-b3eb-409b-a628-e941af9cb808)
+- _File to track active view states for this device_: type any file path here.
+- *View types to record*: we want to sync PDF views only, so we write `pdf` here.
+
+<img width="850" alt="Desktop settings" src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/a0762a08-5de7-4a3a-84cb-81a722363603">
 
 ### iPad settings
 
-Your iPad is just a follower device, so you don't have to fill in the first option.
+Your iPad is just a follower device, so you don't have to fill in the first two options.
 Instead, all the other options need to be specified.
 
-- *View types to watch*: we want to sync PDF views only, so we write `pdf` here.
 - *Follow another device*: turn it on because this device is a follower device.
 - *Path of the active view state file for the followed device*: write the file path that you specified in the desktop settings.
 - *Show "Share" menu after sync*: this is optional, but it will definitely make the workflow smoother in this case!
 
-![iPad settings](https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/3c198362-718e-4353-88c4-dbcfd4a94bdf)
+<img width="850" alt="iPad settings" src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/3c198362-718e-4353-88c4-dbcfd4a94bdf">
 
 ### Obsidian Sync settings
 
@@ -63,7 +65,7 @@ In this example, the active view state file is a `.json` file. In order to sync 
 
 Note that the file extension does not need to be `.json`. If you choose `.md`, you don't need to enable this option although the active view state file might clutter search results.
 
-![Obsidian Sync settings](https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/86f8196e-41a0-4779-81c0-02975fbe6223)
+<img width="850" alt="Obsidian Sync settings" src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/86f8196e-41a0-4779-81c0-02975fbe6223">
 
 ## Installation
 

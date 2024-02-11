@@ -1,0 +1,21 @@
+#view-sync-funding {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: flex-end;
+
+    .setting-item-control {
+        padding-top: var(--size-4-4);
+    }
+}
+
+#view-sync-funding-icon-info-container {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: left; */
+    align-items: center;
+}
+
+#view-sync-funding-icon {
+    margin-right: var(--size-4-4);
+}

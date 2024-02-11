@@ -1,4 +1,4 @@
-import { FileView, Platform, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
+import { FileView, Notice, Platform, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
 import { ViewSyncSettings, DEFAULT_SETTINGS, ViewSyncSettingTab } from 'settings';
 
 
@@ -40,6 +40,8 @@ export default class MyPlugin extends Plugin {
 		this.registerWorkspaceSyncEventSubscriber();
 
 		this.registerFileRenameHandler();
+
+		this.registerCommands();
 	}
 
 	get loadStrorageKey() {
@@ -182,5 +184,22 @@ export default class MyPlugin extends Plugin {
 				this.saveSettings();
 			}
 		}));
+	}
+
+	registerCommands() {
+		this.addCommand({
+			id: 'copy-view-type',
+			name: 'Copy active view type',
+			callback: () => {
+				const leaf = this.app.workspace.activeLeaf;
+				if (leaf) {
+					const type = leaf.view.getViewType();
+					navigator.clipboard.writeText(type);
+					new Notice(`${this.manifest.name}: View type "${type}" copied to clipboard.`);
+					return;
+				}
+				new Notice(`${this.manifest.name}: There is no active view.`);
+			}
+		});
 	}
 }

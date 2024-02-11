@@ -1,9 +1,10 @@
-import { EditableFileView, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
+import { EditableFileView, FileView, Platform, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
 import { ViewSyncSettings, DEFAULT_SETTINGS, ViewSyncSettingTab } from 'settings';
 
 
 declare module 'obsidian' {
 	interface App {
+		openWithDefaultApp(path: string): Promise<void>;
 		loadLocalStorage(key: string): string | null;
 		// - If the second argument is not provided, it will remove the key from the local storage.
 		// - `value` can be anything that can be serialized to JSON, but be careful that values
@@ -97,6 +98,10 @@ export default class MyPlugin extends Plugin {
 				await leaf.setViewState(viewState);
 				if ('eState' in viewState) {
 					leaf.view.setEphemeralState(viewState.eState);
+				}
+				if (Platform.isMobileApp && this.settings.shareAfterSync && leaf.view instanceof FileView) {
+					const file = leaf.view.file;
+					if (file) this.app.openWithDefaultApp(file.path);
 				}
 			}
 		}));

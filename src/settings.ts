@@ -7,6 +7,7 @@ export interface ViewSyncSettings {
 	viewTypes: string[];
 	watchAnother: boolean;
 	watchPath: string;
+	shareAfterSync: boolean;
 	ownWorkspacePath: string;
 	watchAnotherWorkspace: boolean;
 	watchWorkspacePath: string;
@@ -14,9 +15,10 @@ export interface ViewSyncSettings {
 
 export const DEFAULT_SETTINGS: ViewSyncSettings = {
 	ownPath: '',
-	viewTypes: ['pdf'],
+	viewTypes: ['markdown', 'canvas', 'pdf'],
 	watchAnother: false,
 	watchPath: '',
+	shareAfterSync: false,
 	ownWorkspacePath: '',
 	watchAnotherWorkspace: false,
 	watchWorkspacePath: '',
@@ -83,6 +85,11 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 			.addText((text) => {
 				text.setValue(this.settings[settingName])
 					.setPlaceholder(placeholder ?? '')
+					.then((text) => {
+						if (placeholder) {
+							text.inputEl.size = Math.max(text.inputEl.size, text.inputEl.placeholder.length);
+						}
+					})
 					.onChange((value) => {
 						newPath = value;
 					});
@@ -195,32 +202,46 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 					: 'mobile';
 		const exampleFollowedStr = Platform.isDesktop ? 'tablet' : 'desktop';
 
-		this.addHeading('View sync', 'lucide-file-text');
+		this.addHeading('Active view sync', 'lucide-file-text');
 
 		this.addPathSetting('ownPath', `view-sync-${exampleStr}.json`)
-			.setName('File path for this device')
-			.setDesc('Active view states will be tracked by this file. Each device should have a unique path to avoid conflicts. The extension can be anything.')
+			.setName('File to track active view states for this device')
+			.setDesc('Active view states will be tracked by this file. Required for other devices to follow this device\'s active view states. Each device should have a unique path to avoid conflicts. The extension can be anything.')
 		this.addCSVSetting('viewTypes', 'ex) markdown, pdf, canvas')
 			.setName('View types to watch');
 		this.addToggleSetting('watchAnother', () => this.redisplay())
-			.setName('Follow another device');
+			.setName('Follow another device')
+			.setDesc('Note: It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices.');
 
 		if (this.settings.watchAnother) {
 			this.addPathSetting('watchPath', `view-sync-${exampleFollowedStr}.json`)
-				.setName('File path for the followed device');
+				.setName('Path of the active view state file for the followed device');
+			if (Platform.isMobileApp) {
+				this.addToggleSetting('shareAfterSync')
+					.setName('Show "Share" menu after sync')
+					.setDesc('Useful for drawing on PDF files on tablet, for example.')
+			}
 		}
 
 		this.addHeading('Workspace sync', 'lucide-layout');
 
 		this.addPathSetting('ownWorkspacePath', `workspace-sync-${exampleStr}.json`)
-			.setName('Own path')
-			.setDesc('Workspace layouts will be tracked by this file. Each device should have a unique path to avoid conflicts. The extension can be anything.');
+			.setName('File to track workspace layout for this device')
+			.setDesc('Workspace layouts will be tracked by this file. Required for other devices to follow this device\'s workspace layouts. Each device should have a unique path to avoid conflicts. The extension can be anything.');
 		this.addToggleSetting('watchAnotherWorkspace', () => this.redisplay())
-			.setName('Follow another device');
+			.setName('Follow another device')
+			.then((setting) => {
+				this.renderMarkdown([
+					'Note: ',
+					'',
+					'- It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices.',
+					'- It is not recommended to make a mobile device follow a desktop device or vice versa.',
+				], setting.descEl);
+			});
 
 		if (this.settings.watchAnotherWorkspace) {
 			this.addPathSetting('watchWorkspacePath', `workspace-sync-${exampleFollowedStr}.json`)
-				.setName('File path for the followed device');
+				.setName('Path of the workspace layout file for the followed device');
 		}
 
 		this.addFundingButton();

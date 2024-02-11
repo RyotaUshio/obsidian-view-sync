@@ -1,6 +1,6 @@
 {
     "name": "obsidian-view-sync",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "An Obsidian.md plugin to sync the state of the active view, not files, among devices.",
     "scripts": {
         "dev": "node esbuild.config.mjs",

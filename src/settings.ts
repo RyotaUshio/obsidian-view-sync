@@ -204,7 +204,8 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 			.setName('File to track active view states for this device')
 			.setDesc('Active view states will be tracked by this file. Required for other devices to follow this device\'s active view states. Each device should have a unique path to avoid conflicts. The extension can be anything.')
 		this.addCSVSetting('viewTypes', 'ex) markdown, pdf, canvas')
-			.setName('View types to watch');
+			.setName('View types to record')
+			.setDesc('Comma-separated list of view types to record. Other types of views will be ignored. Required if this device is the main device (= followed by other devices).');
 		this.addToggleSetting('watchAnother', () => this.redisplay())
 			.setName('Follow another device')
 			.setDesc('Note: It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices.');

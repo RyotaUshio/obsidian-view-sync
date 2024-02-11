@@ -1,6 +1,6 @@
 # Obsidian View Sync
 
-This is an [Obsidian.md](https://obsidian.md) plugin for **synchronizing the state of active views or workspace layouts** among devices.
+This is an [Obsidian.md](https://obsidian.md) plugin for **synchronizing the state of the active view or workspace layouts** among devices.
 
 It does NOT sync _files_, unlike Obsidian Sync. It syncs the state of the active view (e.g. file opened) or workspace layouts (e.g. arrangement of tabs and windows).
 

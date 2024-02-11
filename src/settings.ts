@@ -49,10 +49,6 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 		return item;
 	}
 
-	scrollTo(settingName: keyof ViewSyncSettings) {
-		this.items[settingName]?.settingEl.scrollIntoView();
-	}
-
 	addHeading(heading: string, icon?: IconName) {
 		return this.addSetting()
 			.setName(heading)

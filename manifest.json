@@ -1,7 +1,7 @@
 {
     "id": "view-sync",
     "name": "View Sync",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "minAppVersion": "1.3.5",
     "description": "Sync the state of the active view, not files, among devices.",
     "author": "Ryota Ushio",

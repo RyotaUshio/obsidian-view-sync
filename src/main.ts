@@ -1,4 +1,4 @@
-import { EditableFileView, FileView, Platform, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
+import { FileView, Platform, Plugin, TFile, View, WorkspaceLeaf, normalizePath } from 'obsidian';
 import { ViewSyncSettings, DEFAULT_SETTINGS, ViewSyncSettingTab } from 'settings';
 
 
@@ -14,6 +14,9 @@ declare module 'obsidian' {
 
 	interface Workspace {
 		on(name: string, callback: (...args: any[]) => any, ctx?: any): EventRef;
+		// Other plugins can trigger the `view-sync:state-change` event when the state of their custom view
+		// changes but the change cannot be informed with the `active-leaf-change` event.
+		// If `override` is provided, it can be used to manupulate the recorded view state.
 		on(name: 'view-sync:state-change', callback: (view: View, override?: { state?: any, eState?: any }) => any, ctx?: any): EventRef;
 	}
 
@@ -43,6 +46,7 @@ export default class MyPlugin extends Plugin {
 		return this.manifest.id + '-settings';
 	}
 
+	// We use localStorage because this plugin's settings are device-specific.
 	loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, this.app.loadLocalStorage(this.loadStrorageKey));
 	}
@@ -51,22 +55,53 @@ export default class MyPlugin extends Plugin {
 		this.app.saveLocalStorage(this.loadStrorageKey, this.settings);
 	}
 
+	/** Write the text `data` into the specified file. If the file does not exist, it will be created. */
+	async writeFile(normalizedPath: string, data: string) {
+		const file = this.app.vault.getAbstractFileByPath(normalizedPath);
+
+		if (file instanceof TFile) {
+			await this.app.vault.modify(file, data);
+			return;
+		} else if (file === null) {
+			const folderPath = normalizePath(normalizedPath.split('/').slice(0, -1).join('/'));
+			if (folderPath) {
+				const folderExists = !!(this.app.vault.getAbstractFileByPath(folderPath));
+				if (!folderExists) {
+					await this.app.vault.createFolder(folderPath);
+				}
+			}
+
+			if (normalizedPath) {
+				return await this.app.vault.create(normalizedPath, data);
+			}
+		}
+	}
+
+	/** Record the state of the active view to the specified file. */
 	async onViewStateChange(view: View, override?: { state?: any, eState?: any }) {
 		const path = normalizePath(this.settings.ownPath);
-		if (!path) return;
+		// An empty string is normalized to `/`
+		if (path === '/') return;
 
 		if (this.settings.viewTypes.contains(view.getViewType())) {
 			const leaf = view.leaf;
+			// Make sure that only the active leaf's state is recorded
 			if (leaf !== this.app.workspace.activeLeaf) return;
 
-			const serialized = JSON.stringify(Object.assign(leaf.getViewState(), override));
+			const serialized = JSON.stringify(Object.assign(
+				leaf.getViewState(),
+				{ eState: view.getEphemeralState() }, // Ephemeral state is not included in the result of getViewState()
+				override
+			));
 			await this.writeFile(path, serialized);
 		}
 	}
 
+	/** Record the workspace layout to the specified file. */
 	onWorkspaceLayoutChange() {
 		const path = normalizePath(this.settings.ownWorkspacePath);
-		if (!path) return;
+		// An empty string is normalized to `/`
+		if (path === '/') return;
 
 		const layout = this.app.workspace.getLayout();
 		const serialized = JSON.stringify(layout);
@@ -74,13 +109,13 @@ export default class MyPlugin extends Plugin {
 	}
 
 	registerViewSyncEventPublisher() {
+		this.registerEvent(this.app.workspace.on('active-leaf-change', async (leaf) => {
+			if (leaf) await this.onViewStateChange(leaf.view);
+		}));
+
 		this.registerEvent(this.app.workspace.on('view-sync:state-change', (view, override) => {
 			this.onViewStateChange(view, override);
 			this.onWorkspaceLayoutChange();
-		}));
-
-		this.registerEvent(this.app.workspace.on('active-leaf-change', async (leaf) => {
-			if (leaf) await this.onViewStateChange(leaf.view);
 		}));
 	}
 
@@ -110,8 +145,10 @@ export default class MyPlugin extends Plugin {
 	getSubscriberLeaf() {
 		let leaf: WorkspaceLeaf | null = null;
 
+		// I believe using `activeLeaf` is innevitable here.
 		const activeLeaf = this.app.workspace.activeLeaf;
 
+		// Avoid opening in sidebars
 		if (activeLeaf && activeLeaf.getRoot() === this.app.workspace.rootSplit) {
 			leaf = activeLeaf;
 		} else {
@@ -133,30 +170,9 @@ export default class MyPlugin extends Plugin {
 			if (this.settings.watchAnotherWorkspace && file instanceof TFile && normalizePath(this.settings.watchWorkspacePath) === file.path) {
 				const data = await this.app.vault.read(file);
 				const layout = JSON.parse(data);
-				this.app.workspace.changeLayout(layout);
+				await this.app.workspace.changeLayout(layout);
 			}
 		}));
-	}
-
-	async writeFile(normalizedPath: string, data: string) {
-		const file = this.app.vault.getAbstractFileByPath(normalizedPath);
-
-		if (file instanceof TFile) {
-			await this.app.vault.modify(file, data);
-			return;
-		} else if (file === null) {
-			const folderPath = normalizePath(normalizedPath.split('/').slice(0, -1).join('/'));
-			if (folderPath) {
-				const folderExists = !!(this.app.vault.getAbstractFileByPath(folderPath));
-				if (!folderExists) {
-					await this.app.vault.createFolder(folderPath);
-				}
-			}
-
-			if (normalizedPath) {
-				return await this.app.vault.create(normalizedPath, data);
-			}
-		}
 	}
 
 	registerFileRenameHandler() {

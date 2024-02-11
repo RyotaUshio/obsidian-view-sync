@@ -13,7 +13,7 @@ declare module 'obsidian' {
 
 	interface Workspace {
 		on(name: string, callback: (...args: any[]) => any, ctx?: any): EventRef;
-		on(name: 'view-sync:state-change', callback: (view: View) => any, ctx?: any): EventRef;
+		on(name: 'view-sync:state-change', callback: (view: View, override?: { state?: any, eState?: any }) => any, ctx?: any): EventRef;
 	}
 
 	interface WorkspaceLeaf {
@@ -50,7 +50,7 @@ export default class MyPlugin extends Plugin {
 		this.app.saveLocalStorage(this.loadStrorageKey, this.settings);
 	}
 
-	async onViewStateChange(view: View) {
+	async onViewStateChange(view: View, override?: { state?: any, eState?: any }) {
 		const path = normalizePath(this.settings.ownPath);
 		if (!path) return;
 
@@ -58,8 +58,7 @@ export default class MyPlugin extends Plugin {
 			const leaf = view.leaf;
 			if (leaf !== this.app.workspace.activeLeaf) return;
 
-			const viewState = leaf.getViewState();
-			const serialized = JSON.stringify(viewState);
+			const serialized = JSON.stringify(Object.assign(leaf.getViewState(), override));
 			await this.writeFile(path, serialized);
 		}
 	}
@@ -74,8 +73,8 @@ export default class MyPlugin extends Plugin {
 	}
 
 	registerViewSyncEventPublisher() {
-		this.registerEvent(this.app.workspace.on('view-sync:state-change', (view) => {
-			this.onViewStateChange(view);
+		this.registerEvent(this.app.workspace.on('view-sync:state-change', (view, override) => {
+			this.onViewStateChange(view, override);
 			this.onWorkspaceLayoutChange();
 		}));
 
@@ -89,23 +88,35 @@ export default class MyPlugin extends Plugin {
 			if (this.settings.watchAnotherWorkspace) return;
 
 			if (this.settings.watchAnother && file instanceof TFile && normalizePath(this.settings.watchPath) === file.path) {
+				const leaf = this.getSubscriberLeaf();
+				if (!leaf) return;
+
 				const data = await this.app.vault.read(file);
 				const viewState = JSON.parse(data);
-				let leaf: WorkspaceLeaf | undefined;
-				const activeLeaf = this.app.workspace.activeLeaf;
-				if (activeLeaf && activeLeaf.getRoot() === this.app.workspace.rootSplit) {
-					leaf = activeLeaf;
-				} else {
-					this.app.workspace.iterateRootLeaves((l) => {
-						if (!leaf && l.isVisible())
-							leaf = l;
-					});
-				}
-				if (leaf) {
-					leaf.setViewState(viewState);
+
+				await leaf.setViewState(viewState);
+				if ('eState' in viewState) {
+					leaf.view.setEphemeralState(viewState.eState);
 				}
 			}
 		}));
+	}
+
+	getSubscriberLeaf() {
+		let leaf: WorkspaceLeaf | null = null;
+
+		const activeLeaf = this.app.workspace.activeLeaf;
+
+		if (activeLeaf && activeLeaf.getRoot() === this.app.workspace.rootSplit) {
+			leaf = activeLeaf;
+		} else {
+			this.app.workspace.iterateRootLeaves((l) => {
+				if (!leaf && l.isVisible())
+					leaf = l;
+			});
+		}
+
+		return leaf;
 	}
 
 	registerWorkspaceSyncEventPublisher() {
@@ -126,19 +137,20 @@ export default class MyPlugin extends Plugin {
 		const file = this.app.vault.getAbstractFileByPath(normalizedPath);
 
 		if (file instanceof TFile) {
-			return await this.app.vault.modify(file, data);
-		}
-
-		const folderPath = normalizePath(normalizedPath.split('/').slice(0, -1).join('/'));
-		if (folderPath) {
-			const folderExists = !!(this.app.vault.getAbstractFileByPath(folderPath));
-			if (!folderExists) {
-				await this.app.vault.createFolder(folderPath);
+			await this.app.vault.modify(file, data);
+			return;
+		} else if (file === null) {
+			const folderPath = normalizePath(normalizedPath.split('/').slice(0, -1).join('/'));
+			if (folderPath) {
+				const folderExists = !!(this.app.vault.getAbstractFileByPath(folderPath));
+				if (!folderExists) {
+					await this.app.vault.createFolder(folderPath);
+				}
 			}
-		}
 
-		if (normalizedPath) {
-			return await this.app.vault.create(normalizedPath, data);
+			if (normalizedPath) {
+				return await this.app.vault.create(normalizedPath, data);
+			}
 		}
 	}
 

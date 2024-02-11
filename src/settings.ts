@@ -1,4 +1,4 @@
-import { AbstractInputSuggest, Component, IconName, MarkdownRenderer, PluginSettingTab, SearchResultContainer, Setting, TFile, prepareFuzzySearch, renderResults, setIcon, setTooltip, sortSearchResults } from 'obsidian';
+import { Component, IconName, MarkdownRenderer, Platform, PluginSettingTab, Setting, TFile, setIcon } from 'obsidian';
 import MyPlugin from 'main';
 
 
@@ -107,34 +107,6 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 			});
 	}
 
-	// addTextAreaSetting(settingName: KeysOfType<ViewSyncSettings, string>, placeholder?: string, onBlur?: () => any) {
-	// 	return this.addSetting(settingName)
-	// 		.addTextArea((text) => {
-	// 			text.setValue(this.plugin.settings[settingName])
-	// 				.setPlaceholder(placeholder ?? '')
-	// 				.onChange(async (value) => {
-	// 					// @ts-ignore
-	// 					this.plugin.settings[settingName] = value;
-	// 					await this.plugin.saveSettings();
-	// 				});
-	// 			if (onBlur) this.component.registerDomEvent(text.inputEl, 'blur', onBlur);
-	// 		});
-	// }
-
-	// addNumberSetting(settingName: KeysOfType<ViewSyncSettings, number>) {
-	// 	return this.addSetting(settingName)
-	// 		.addText((text) => {
-	// 			text.setValue('' + this.plugin.settings[settingName])
-	// 				.setPlaceholder('' + DEFAULT_SETTINGS[settingName])
-	// 				.then((text) => text.inputEl.type = 'number')
-	// 				.onChange(async (value) => {
-	// 					// @ts-ignore
-	// 					this.plugin.settings[settingName] = value === '' ? DEFAULT_SETTINGS[settingName] : +value;
-	// 					await this.plugin.saveSettings();
-	// 				});
-	// 		});
-	// }
-
 	addToggleSetting(settingName: KeysOfType<ViewSyncSettings, boolean>, extraOnChange?: (value: boolean) => void) {
 		return this.addSetting(settingName)
 			.addToggle((toggle) => {
@@ -147,86 +119,6 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 					});
 			});
 	}
-
-	// addColorPickerSetting(settingName: KeysOfType<ViewSyncSettings, HexString>, extraOnChange?: (value: HexString) => void) {
-	// 	return this.addSetting(settingName)
-	// 		.addColorPicker((picker) => {
-	// 			picker.setValue(this.plugin.settings[settingName])
-	// 				.onChange(async (value) => {
-	// 					// @ts-ignore
-	// 					this.plugin.settings[settingName] = value;
-	// 					await this.plugin.saveSettings();
-	// 					extraOnChange?.(value);
-	// 				});
-	// 		});
-	// }
-
-	// addDropdownSetting(settingName: KeysOfType<ViewSyncSettings, string>, options: readonly string[], display?: (option: string) => string, extraOnChange?: (value: string) => void): Setting;
-	// addDropdownSetting(settingName: KeysOfType<ViewSyncSettings, string>, options: Record<string, string>, extraOnChange?: (value: string) => void): Setting;
-	// addDropdownSetting(settingName: KeysOfType<ViewSyncSettings, string>, ...args: any[]) {
-	// 	let options: string[] = [];
-	// 	let display = (optionValue: string) => optionValue;
-	// 	let extraOnChange = (value: string) => { };
-	// 	if (Array.isArray(args[0])) {
-	// 		options = args[0];
-	// 		if (typeof args[1] === 'function') display = args[1];
-	// 		if (typeof args[2] === 'function') extraOnChange = args[2];
-	// 	} else {
-	// 		options = Object.keys(args[0]);
-	// 		display = (optionValue: string) => args[0][optionValue];
-	// 		if (typeof args[1] === 'function') extraOnChange = args[1];
-	// 	}
-	// 	return this.addSetting(settingName)
-	// 		.addDropdown((dropdown) => {
-	// 			for (const option of options) {
-	// 				const displayName = display(option) ?? option;
-	// 				dropdown.addOption(option, displayName);
-	// 			}
-	// 			dropdown.setValue(this.plugin.settings[settingName])
-	// 				.onChange(async (value) => {
-	// 					// @ts-ignore
-	// 					this.plugin.settings[settingName] = value;
-	// 					await this.plugin.saveSettings();
-	// 					extraOnChange?.(value);
-	// 				});
-	// 		});
-	// }
-
-	// addIndexDropdownSetting(settingName: KeysOfType<ViewSyncSettings, number>, options: readonly string[], display?: (option: string) => string, extraOnChange?: (value: number) => void): Setting {
-	// 	return this.addSetting(settingName)
-	// 		.addDropdown((dropdown) => {
-	// 			for (const option of options) {
-	// 				const displayName = display?.(option) ?? option;
-	// 				dropdown.addOption(option, displayName);
-	// 			}
-	// 			const index = this.plugin.settings[settingName];
-	// 			const option = options[index];
-	// 			dropdown.setValue(option)
-	// 				.onChange(async (value) => {
-	// 					const newIndex = options.indexOf(value);
-	// 					if (newIndex !== -1) {
-	// 						// @ts-ignore
-	// 						this.plugin.settings[settingName] = newIndex;
-	// 						await this.plugin.saveSettings();
-	// 						extraOnChange?.(newIndex);
-	// 					}
-	// 				});
-	// 		});
-	// }
-
-	// addSliderSetting(settingName: KeysOfType<ViewSyncSettings, number>, min: number, max: number, step: number) {
-	// 	return this.addSetting(settingName)
-	// 		.addSlider((slider) => {
-	// 			slider.setLimits(min, max, step)
-	// 				.setValue(this.plugin.settings[settingName])
-	// 				.setDynamicTooltip()
-	// 				.onChange(async (value) => {
-	// 					// @ts-ignore
-	// 					this.plugin.settings[settingName] = value;
-	// 					await this.plugin.saveSettings();
-	// 				});
-	// 		});
-	// }
 
 	addDesc(desc: string) {
 		return this.addSetting()
@@ -285,120 +177,6 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 		}
 	}
 
-	// addNameValuePairListSetting<Item>(items: Item[], index: number, defaultIndexKey: KeysOfType<ViewSyncSettings, number>, accesors: {
-	// 	getName: (item: Item) => string,
-	// 	setName: (item: Item, value: string) => void,
-	// 	getValue: (item: Item) => string,
-	// 	setValue: (item: Item, value: string) => void,
-	// }, configs: {
-	// 	name: {
-	// 		placeholder: string,
-	// 		formSize: number,
-	// 		duplicateMessage: string,
-	// 	},
-	// 	value: {
-	// 		placeholder: string,
-	// 		formSize: number,
-	// 		formRows?: number, // for multi-line value
-	// 	},
-	// 	delete: {
-	// 		deleteLastMessage: string,
-	// 	}
-	// }) {
-	// 	const { getName, setName, getValue, setValue } = accesors;
-	// 	const item = items[index];
-	// 	const name = getName(item);
-	// 	const value = getValue(item);
-
-	// 	return this.addSetting()
-	// 		.addText((text) => {
-	// 			text.setPlaceholder(configs.name.placeholder)
-	// 				.then((text) => {
-	// 					text.inputEl.size = configs.name.formSize;
-	// 					setTooltip(text.inputEl, configs.name.placeholder);
-	// 				})
-	// 				.setValue(name)
-	// 				.onChange(async (newName) => {
-	// 					if (items.some((item) => getName(item) === newName)) {
-	// 						new Notice(configs.name.duplicateMessage);
-	// 						text.inputEl.addClass('error');
-	// 						return;
-	// 					}
-	// 					text.inputEl.removeClass('error');
-	// 					setName(item, newName);
-
-	// 					const setting = this.items[defaultIndexKey];
-	// 					if (setting) {
-	// 						const optionEl = ((setting as Setting).components[0] as DropdownComponent).selectEl.querySelector<HTMLOptionElement>(`:scope > option:nth-child(${index + 1})`);
-	// 						if (optionEl) {
-	// 							optionEl.value = newName;
-	// 							optionEl.textContent = newName;
-	// 						}
-	// 					}
-
-	// 					await this.plugin.saveSettings();
-	// 				});
-	// 		})
-	// 		.then((setting) => {
-	// 			if (configs.value.hasOwnProperty('formRows')) {
-	// 				setting.addTextArea((textarea) => {
-	// 					textarea.setPlaceholder(configs.value.placeholder)
-	// 						.then((textarea) => {
-	// 							textarea.inputEl.rows = configs.value.formRows!;
-	// 							textarea.inputEl.cols = configs.value.formSize;
-	// 							setTooltip(textarea.inputEl, configs.value.placeholder);
-	// 						})
-	// 						.setValue(value)
-	// 						.onChange(async (newValue) => {
-	// 							setValue(item, newValue);
-	// 							await this.plugin.saveSettings();
-	// 						});
-	// 				});
-	// 			} else {
-	// 				setting.addText((textarea) => {
-	// 					textarea.setPlaceholder(configs.value.placeholder)
-	// 						.then((text) => {
-	// 							text.inputEl.size = configs.value.formSize;
-	// 							setTooltip(text.inputEl, configs.value.placeholder);
-	// 						})
-	// 						.setValue(value)
-	// 						.onChange(async (newValue) => {
-	// 							setValue(item, newValue);
-	// 							await this.plugin.saveSettings();
-	// 						});
-	// 				})
-	// 			}
-	// 		})
-	// 		.addExtraButton((button) => {
-	// 			button.setIcon('trash')
-	// 				.setTooltip('Delete')
-	// 				.onClick(async () => {
-	// 					if (items.length === 1) {
-	// 						new Notice(configs.delete.deleteLastMessage);
-	// 						return;
-	// 					}
-	// 					items.splice(index, 1);
-	// 					if (this.plugin.settings[defaultIndexKey] >= index) {
-	// 						this.plugin.settings[defaultIndexKey]--;
-	// 					}
-	// 					await this.plugin.saveSettings();
-	// 					this.redisplay();
-	// 				});
-	// 		})
-	// 		.setClass('no-border');
-	// }
-
-	addHotkeySettingButton(setting: Setting) {
-		setting.addButton((button) => {
-			button.setButtonText('Open hotkeys settings')
-				.onClick(() => {
-					// @ts-ignore
-					const tab = this.app.setting.openTabById('hotkeys');
-					tab.setQuery(this.plugin.manifest.id);
-				});
-		});
-	}
-
 	/** Refresh the setting tab and then scroll back to the original position. */
 	async redisplay() {
 		const scrollTop = this.containerEl.scrollTop;
@@ -411,30 +189,38 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 		this.component.load();
 		this.containerEl.empty();
 
+		const exampleStr =
+			Platform.isDesktop ? 'desktop'
+				: Platform.isTablet ? 'tablet'
+					: 'mobile';
+		const exampleFollowedStr = Platform.isDesktop ? 'tablet' : 'desktop';
+
 		this.addHeading('View sync', 'lucide-file-text');
 
-		this.addPathSetting('ownPath', 'view-sync.json')
-			.setName('Own path');
+		this.addPathSetting('ownPath', `view-sync-${exampleStr}.json`)
+			.setName('File path for this device')
+			.setDesc('Active view states will be tracked by this file. Each device should have a unique path to avoid conflicts. The extension can be anything.')
 		this.addCSVSetting('viewTypes', 'ex) markdown, pdf, canvas')
 			.setName('View types to watch');
 		this.addToggleSetting('watchAnother', () => this.redisplay())
 			.setName('Follow another device');
 
 		if (this.settings.watchAnother) {
-			this.addPathSetting('watchPath')
-				.setName('File path to watch');
+			this.addPathSetting('watchPath', `view-sync-${exampleFollowedStr}.json`)
+				.setName('File path for the followed device');
 		}
 
 		this.addHeading('Workspace sync', 'lucide-layout');
 
-		this.addPathSetting('ownWorkspacePath', 'workspace-sync.json')
-			.setName('Own path');
+		this.addPathSetting('ownWorkspacePath', `workspace-sync-${exampleStr}.json`)
+			.setName('Own path')
+			.setDesc('Workspace layouts will be tracked by this file. Each device should have a unique path to avoid conflicts. The extension can be anything.');
 		this.addToggleSetting('watchAnotherWorkspace', () => this.redisplay())
 			.setName('Follow another device');
 
 		if (this.settings.watchAnotherWorkspace) {
-			this.addPathSetting('watchWorkspacePath')
-				.setName('File path to watch');
+			this.addPathSetting('watchWorkspacePath', `workspace-sync-${exampleFollowedStr}.json`)
+				.setName('File path for the followed device');
 		}
 
 		this.addFundingButton();
@@ -442,55 +228,5 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 
 	hide() {
 		this.component.unload();
-	}
-}
-
-
-type Ranked<Item> = SearchResultContainer & { item: Item };
-
-abstract class FuzzyInputSuggest<Item> extends AbstractInputSuggest<Ranked<Item>> {
-	plugin: MyPlugin;
-	inputEl: HTMLInputElement;
-
-	constructor(plugin: MyPlugin, inputEl: HTMLInputElement) {
-		super(plugin.app, inputEl);
-		this.inputEl = inputEl;
-		this.plugin = plugin;
-	}
-
-	abstract getItems(): Item[];
-
-	abstract getItemText(item: Item): string;
-
-	abstract getName(item: Item): string;
-
-	getSuggestions(query: string) {
-		const search = prepareFuzzySearch(query.trim());
-		const items = this.getItems();
-
-		const results: Ranked<Item>[] = [];
-
-		for (const item of items) {
-			const target = this.getItemText(item);
-			const match = search(target);
-			if (match) results.push({ match, item });
-		}
-
-		sortSearchResults(results);
-
-		return results;
-	}
-
-	renderSuggestion(rankedItem: Ranked<Item>, el: HTMLElement) {
-		const { item, match } = rankedItem;
-		renderResults(el, this.getItemText(item), match);
-	}
-
-	selectSuggestion(rankedItem: Ranked<Item>) {
-		const { item } = rankedItem;
-
-		this.inputEl.blur();
-		this.inputEl.value = this.getName(item);
-		this.close();
 	}
 }

@@ -57,7 +57,7 @@ Instead, all the other options need to be specified.
 - *Path of the active view state file for the followed device*: write the file path that you specified in the desktop settings.
 - *Show "Share" menu after sync*: this is optional, but it will definitely make the workflow smoother in this case!
 
-<img width="850" alt="iPad settings" src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/3c198362-718e-4353-88c4-dbcfd4a94bdf">
+<img width="850" alt="iPad settings" src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/20e5a5bb-b46c-4614-8e82-4511a277911c">
 
 ### Obsidian Sync settings
 

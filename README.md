@@ -39,6 +39,10 @@ It will save the handwriting to the original PDF file, and it will immediately a
 
 <img src="https://github.com/RyotaUshio/obsidian-view-sync/assets/72342591/b691aab8-40c9-4fd1-8d5c-de4d6579d8db" alt="Share menu" width=300>
 
+> [!TIP]
+> In the above workflow, Markup can be replaced with any other app that can add drawings directly to the _original_ PDF without making copies.
+> My recommendation is [NotesWriter Pro](https://www.noteswriter.com/features.html).
+
 ### Desktop settings
 
 Since the desktop is the main device in this example, you only have to fill in the first two options.

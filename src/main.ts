@@ -25,8 +25,10 @@ declare module 'obsidian' {
 	}
 }
 
-export default class MyPlugin extends Plugin {
+export default class ViewSyncPlugin extends Plugin {
 	settings: ViewSyncSettings;
+	#lastViewStateSave: number = 0;
+	#lastWorkspaceLayoutSave: number = 0;
 
 	onload() {
 		this.loadSettings();
@@ -90,29 +92,36 @@ export default class MyPlugin extends Plugin {
 			// Make sure that only the active leaf's state is recorded
 			if (leaf !== this.app.workspace.activeLeaf) return;
 
-			const serialized = JSON.stringify(Object.assign(
-				leaf.getViewState(),
-				{ eState: view.getEphemeralState() }, // Ephemeral state is not included in the result of getViewState()
-				override
-			));
+			const timestamp = Date.now();
+			this.#lastViewStateSave = timestamp;
+			const serialized = JSON.stringify({
+				timestamp,
+				viewState: Object.assign(
+					leaf.getViewState(),
+					{ eState: view.getEphemeralState() }, // Ephemeral state is not included in the result of getViewState()
+					override
+				)
+			});
 			await this.writeFile(path, serialized);
 		}
 	}
 
 	/** Record the workspace layout to the specified file. */
-	onWorkspaceLayoutChange() {
+	async onWorkspaceLayoutChange() {
 		const path = normalizePath(this.settings.ownWorkspacePath);
 		// An empty string is normalized to `/`
 		if (path === '/') return;
 
 		const layout = this.app.workspace.getLayout();
-		const serialized = JSON.stringify(layout);
-		this.writeFile(path, serialized);
+		const timestamp = Date.now();
+		this.#lastWorkspaceLayoutSave = timestamp;
+		const serialized = JSON.stringify({ timestamp, layout });
+		await this.writeFile(path, serialized);
 	}
 
 	registerViewSyncEventPublisher() {
-		this.registerEvent(this.app.workspace.on('active-leaf-change', async (leaf) => {
-			if (leaf) await this.onViewStateChange(leaf.view);
+		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf) => {
+			if (leaf) this.onViewStateChange(leaf.view);
 		}));
 
 		this.registerEvent(this.app.workspace.on('view-sync:state-change', (view, override) => {
@@ -130,7 +139,9 @@ export default class MyPlugin extends Plugin {
 				if (!leaf) return;
 
 				const data = await this.app.vault.read(file);
-				const viewState = JSON.parse(data);
+				const { timestamp, viewState } = JSON.parse(data);
+
+				if (this.settings.syncOnlyIfNewer && this.#lastViewStateSave >= timestamp) return;
 
 				await leaf.setViewState(viewState);
 				if ('eState' in viewState) {
@@ -171,7 +182,10 @@ export default class MyPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('modify', async (file) => {
 			if (this.settings.watchAnotherWorkspace && file instanceof TFile && normalizePath(this.settings.watchWorkspacePath) === file.path) {
 				const data = await this.app.vault.read(file);
-				const layout = JSON.parse(data);
+				const { timestamp, layout } = JSON.parse(data);
+
+				if (this.settings.syncWorkspaceOnlyIfNewer && this.#lastWorkspaceLayoutSave >= timestamp) return;
+
 				await this.app.workspace.changeLayout(layout);
 			}
 		}));

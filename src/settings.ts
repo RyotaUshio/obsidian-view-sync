@@ -1,5 +1,5 @@
 import { Component, IconName, MarkdownRenderer, Platform, PluginSettingTab, Setting, TFile, setIcon } from 'obsidian';
-import MyPlugin from 'main';
+import ViewSyncPlugin from 'main';
 
 
 export interface ViewSyncSettings {
@@ -7,10 +7,12 @@ export interface ViewSyncSettings {
 	viewTypes: string[];
 	watchAnother: boolean;
 	watchPath: string;
+	syncOnlyIfNewer: boolean;
 	shareAfterSync: boolean;
 	ownWorkspacePath: string;
 	watchAnotherWorkspace: boolean;
 	watchWorkspacePath: string;
+	syncWorkspaceOnlyIfNewer: boolean;
 }
 
 export const DEFAULT_SETTINGS: ViewSyncSettings = {
@@ -18,10 +20,12 @@ export const DEFAULT_SETTINGS: ViewSyncSettings = {
 	viewTypes: ['markdown', 'canvas', 'pdf'],
 	watchAnother: false,
 	watchPath: '',
+	syncOnlyIfNewer: false,
 	shareAfterSync: false,
 	ownWorkspacePath: '',
 	watchAnotherWorkspace: false,
 	watchWorkspacePath: '',
+	syncWorkspaceOnlyIfNewer: false,
 };
 
 // Inspired by https://stackoverflow.com/a/50851710/13613783
@@ -32,7 +36,7 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 	items: Partial<Record<keyof ViewSyncSettings, Setting>>;
 	promises: Promise<any>[];
 
-	constructor(public plugin: MyPlugin) {
+	constructor(public plugin: ViewSyncPlugin) {
 		super(plugin.app, plugin);
 		this.component = new Component();
 		this.items = {};
@@ -208,7 +212,7 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 			.setDesc('Comma-separated list of view types to record. Other types of views will be ignored. Required if this device is the main device (= followed by other devices). Note that view types are case-sensitive. To get the type of the active view, you can run the "Copy active view type" command.');
 		this.addToggleSetting('watchAnother', () => this.redisplay())
 			.setName('Follow another device')
-			.setDesc('Note: It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices.');
+			.setDesc('Note: It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices. If you want them to follow each other, make sure to turn on the "Sync only if newer ..." option on both devices to avoid conflicts.');
 
 		if (this.settings.watchAnother) {
 			this.addPathSetting('watchPath', `view-sync-${exampleFollowedStr}.json`)
@@ -218,6 +222,9 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 					.setName('Show "Share" menu after sync')
 					.setDesc('Useful for drawing on PDF files on tablet, for example.')
 			}
+			this.addToggleSetting('syncOnlyIfNewer')
+				.setName('Sync only if newer than this device\'s last view state update')
+				.setDesc('If this device has a newer view state than the followed device, the view state will not be updated.');
 		}
 
 		this.addHeading('Workspace sync', 'lucide-layout');
@@ -231,7 +238,7 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 				this.renderMarkdown([
 					'Note: ',
 					'',
-					'- It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices.',
+					'- It might be problematic if you let two devices follow each other. I recommend a one-way sync: one main device and one or more follower devices. If you want them to follow each other, make sure to turn on the "Sync only if newer ..." option on both devices to avoid conflicts.',
 					'- It is not recommended to make a mobile device follow a desktop device or vice versa.',
 				], setting.descEl);
 			});
@@ -239,6 +246,9 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 		if (this.settings.watchAnotherWorkspace) {
 			this.addPathSetting('watchWorkspacePath', `workspace-sync-${exampleFollowedStr}.json`)
 				.setName('Path of the workspace layout file for the followed device');
+			this.addToggleSetting('syncWorkspaceOnlyIfNewer')
+				.setName('Sync only if newer than this device\'s last workspace layout update')
+				.setDesc('If this device has a newer workspace layout than the followed device, the workspace layout will not be updated.');
 		}
 
 		this.addFundingButton();

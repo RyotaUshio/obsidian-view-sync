@@ -9,6 +9,7 @@ export interface ViewSyncSettings {
 	watchPath: string;
 	syncOnlyIfNewer: boolean;
 	shareAfterSync: boolean;
+	syncPdfViewOnlyIfPageChanged: boolean;
 	ownWorkspacePath: string;
 	watchAnotherWorkspace: boolean;
 	watchWorkspacePath: string;
@@ -22,6 +23,7 @@ export const DEFAULT_SETTINGS: ViewSyncSettings = {
 	watchPath: '',
 	syncOnlyIfNewer: false,
 	shareAfterSync: false,
+	syncPdfViewOnlyIfPageChanged: true,
 	ownWorkspacePath: '',
 	watchAnotherWorkspace: false,
 	watchWorkspacePath: '',
@@ -225,6 +227,9 @@ export class ViewSyncSettingTab extends PluginSettingTab {
 			this.addToggleSetting('syncOnlyIfNewer')
 				.setName('Sync only if newer than this device\'s last view state update')
 				.setDesc('If this device has a newer view state than the followed device, the view state will not be updated.');
+			this.addToggleSetting('syncPdfViewOnlyIfPageChanged')
+				.setName('Sync PDF view state only if the page has changed')
+				.setDesc('For PDF++ integration. If the page has not changed, the view state will not be updated.');
 		}
 
 		this.addHeading('Workspace sync', 'lucide-layout');

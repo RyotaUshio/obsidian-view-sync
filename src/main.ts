@@ -139,13 +139,20 @@ export default class ViewSyncPlugin extends Plugin {
 				if (!leaf) return;
 
 				const data = await this.app.vault.read(file);
-				const { timestamp, viewState } = JSON.parse(data);
+				const { timestamp, viewState: newState } = JSON.parse(data);
 
 				if (this.settings.syncOnlyIfNewer && this.#lastViewStateSave >= timestamp) return;
 
-				await leaf.setViewState(viewState);
-				if ('eState' in viewState) {
-					leaf.view.setEphemeralState(viewState.eState);
+				const currentState = leaf.getViewState();
+				if (this.settings.syncPdfViewOnlyIfPageChanged
+					&& currentState.type === 'pdf' && newState.type === 'pdf'
+					&& currentState.state.page === newState.state.page) {
+					return;
+				}
+
+				await leaf.setViewState(newState);
+				if ('eState' in newState) {
+					leaf.view.setEphemeralState(newState.eState);
 				}
 				if (Platform.isMobileApp && this.settings.shareAfterSync && leaf.view instanceof FileView) {
 					const file = leaf.view.file;
